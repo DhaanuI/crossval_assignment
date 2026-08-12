@@ -1,7 +1,10 @@
 import axios from 'axios';
 
-// Vite uses import.meta.env instead of process.env
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://crossval-assignment-eight.vercel.app/api';
+// Backend API URL - Render deployment
+const API_BASE_URL = 'https://crossval-assignment-g25f.onrender.com/api';
+
+// For local development, uncomment this line and comment the line above:
+// const API_BASE_URL = 'http://localhost:5000/api';
 
 // Create axios instance
 const api = axios.create({
