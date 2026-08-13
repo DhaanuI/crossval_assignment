@@ -2,6 +2,14 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { authAPI } from '../services/api'
 
+const getPasswordRules = (password) => ({
+  length: password.length >= 8,
+  upper: /[A-Z]/.test(password),
+  lower: /[a-z]/.test(password),
+  number: /\d/.test(password),
+  special: /[@$!%*?&]/.test(password),
+})
+
 function Signup({ onLogin }) {
   const [formData, setFormData] = useState({
     email: '',
@@ -27,8 +35,9 @@ function Signup({ onLogin }) {
       return
     }
 
-    if (formData.password.length < 8) {
-      setError('Password must be at least 8 characters')
+    const rules = getPasswordRules(formData.password)
+    if (Object.values(rules).some((met) => !met)) {
+      setError('Password does not meet the requirements below')
       return
     }
 
@@ -73,8 +82,24 @@ function Signup({ onLogin }) {
               value={formData.password}
               onChange={handleChange}
               required
-              placeholder="At least 8 characters"
+              placeholder="Create a password"
             />
+            <ul className="password-rules">
+              {[
+                ['length', '8+ characters'],
+                ['upper', 'Uppercase'],
+                ['lower', 'Lowercase'],
+                ['number', 'Number'],
+                ['special', 'Symbol'],
+              ].map(([key, label]) => (
+                <li
+                  key={key}
+                  className={getPasswordRules(formData.password)[key] ? 'met' : ''}
+                >
+                  {label}
+                </li>
+              ))}
+            </ul>
           </div>
           <div className="form-group">
             <label htmlFor="confirmPassword">Confirm Password</label>

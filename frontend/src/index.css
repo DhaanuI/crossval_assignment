@@ -171,6 +171,30 @@ button, input, select, textarea, .btn, .navbar, table {
 .form-group { margin-bottom: 18px; }
 .form-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; }
 
+.password-rules {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.password-rules li {
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.password-rules li.met {
+  border-color: var(--teal);
+  background: rgba(15, 118, 110, 0.08);
+  color: var(--teal);
+}
+
 .form-group input,
 .form-group select,
 .form-group textarea {

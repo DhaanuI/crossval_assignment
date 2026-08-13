@@ -47,6 +47,15 @@ app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 // Global rate limiting for all API routes
 app.use("/api", apiLimiter);
 
+app.get("/", (req, res) => {
+  res.json({
+    success: true,
+    message: "Welcome to the Orders & Settlements API",
+    health: "/api/health",
+    app: "https://crossval-assignment-ukee.vercel.app",
+  });
+});
+
 // Health check route
 app.get("/api/health", (req, res) => {
   res.json({
