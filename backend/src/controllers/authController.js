@@ -1,5 +1,5 @@
 const User = require('../models/User');
-const { generateToken } = require('../utils/tokenUtils');
+const { generateToken, setAuthCookie, clearAuthCookie } = require('../utils/tokenUtils');
 const { signupSchema, loginSchema } = require('../validators/authValidator');
 
 /**
@@ -24,9 +24,8 @@ const signup = async (req, res) => {
     // This relies on MongoDB's unique index on email field to prevent duplicates
     try {
       const user = await User.create({ email, password });
-
-      // Generate token
       const token = generateToken(user._id);
+      setAuthCookie(res, token);
 
       console.log(`New user registered: ${email}`);
 
@@ -126,8 +125,8 @@ const login = async (req, res) => {
       await user.resetLoginAttempts();
     }
 
-    // Generate token
     const token = generateToken(user._id);
+    setAuthCookie(res, token);
 
     console.log(`User logged in successfully: ${email}`);
 
@@ -176,8 +175,23 @@ const getMe = async (req, res) => {
   }
 };
 
+/**
+ * @desc    Logout user and clear auth cookie
+ * @route   POST /api/auth/logout
+ * @access  Public
+ */
+const logout = async (req, res) => {
+  clearAuthCookie(res);
+
+  res.status(200).json({
+    success: true,
+    message: 'Logged out successfully',
+  });
+};
+
 module.exports = {
   signup,
   login,
+  logout,
   getMe,
 };

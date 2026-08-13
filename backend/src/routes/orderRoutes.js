@@ -5,6 +5,7 @@ const {
   getOrderById,
   updateOrder,
   deleteOrder,
+  exportOrders,
 } = require('../controllers/orderController');
 const { protect } = require('../middleware/auth');
 const { orderCreationLimiter } = require('../middleware/rateLimiter');
@@ -20,6 +21,8 @@ router
   .route('/')
   .post(orderCreationLimiter, validate(createOrderSchema), createOrder)
   .get(getOrders);
+
+router.get('/export', exportOrders);
 
 router
   .route('/:id')

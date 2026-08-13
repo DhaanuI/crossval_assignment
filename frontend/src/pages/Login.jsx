@@ -23,9 +23,8 @@ function Login({ onLogin }) {
     setLoading(true)
 
     try {
-      const response = await authAPI.login(formData.email, formData.password)
-      const { token } = response.data.data
-      onLogin(token)
+      await authAPI.login(formData.email, formData.password)
+      onLogin()
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed. Please try again.')
     } finally {

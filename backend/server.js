@@ -20,9 +20,21 @@ connectDB();
 app.use(helmet()); // Set security HTTP headers
 app.use(mongoSanitize()); // Sanitize data against NoSQL query injection
 
-// CORS configuration
+// CORS configuration — cookies need an explicit origin, not *
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  "http://localhost:3000",
+  "https://crossval-assignment-ukee.vercel.app",
+].filter(Boolean);
+
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || "http://localhost:3000",
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+      return;
+    }
+    callback(new Error("Not allowed by CORS"));
+  },
   credentials: true,
   optionsSuccessStatus: 200,
 };

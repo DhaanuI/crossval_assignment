@@ -1,41 +1,26 @@
 import axios from 'axios';
 
-// Backend API URL - Render deployment
-const API_BASE_URL = 'https://crossval-assignment-g25f.onrender.com/api';
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL || 'https://crossval-assignment-g25f.onrender.com/api';
 
-// For local development, uncomment this line and comment the line above:
-// const API_BASE_URL = 'http://localhost:5000/api';
-
-// Create axios instance
 const api = axios.create({
   baseURL: API_BASE_URL,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Add token to requests
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
-// Handle response errors
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Only redirect on 401 if user has a token (actual auth failure)
-    // Don't redirect if they're trying to login/signup with wrong credentials
-    if (error.response?.status === 401 && localStorage.getItem('token')) {
-      localStorage.removeItem('token');
+    const requestUrl = error.config?.url || '';
+    const authRequest =
+      requestUrl.includes('/auth/login') ||
+      requestUrl.includes('/auth/signup') ||
+      requestUrl.includes('/auth/me');
+
+    if (error.response?.status === 401 && !authRequest && window.location.pathname !== '/login') {
       window.location.href = '/login';
     }
     return Promise.reject(error);
@@ -47,26 +32,29 @@ export const wakeBackend = () =>
     console.log('Backend wake-up ping failed:', error.message);
   });
 
-// Auth API
 export const authAPI = {
   signup: (email, password) => api.post('/auth/signup', { email, password }),
   login: (email, password) => api.post('/auth/login', { email, password }),
+  logout: () => api.post('/auth/logout'),
   getMe: () => api.get('/auth/me'),
 };
 
-// Orders API
 export const ordersAPI = {
   create: (orderData) => api.post('/orders', orderData),
-  getAll: (status) => api.get('/orders', { params: status ? { status } : {} }),
+  getAll: (params = {}) => api.get('/orders', { params }),
   getById: (id) => api.get(`/orders/${id}`),
   update: (id, orderData) => api.put(`/orders/${id}`, orderData),
   delete: (id) => api.delete(`/orders/${id}`),
+  exportCsv: (from, to) =>
+    api.get('/orders/export', {
+      params: { from, to },
+      responseType: 'blob',
+    }),
 };
 
-// Payments API
 export const paymentsAPI = {
   create: (paymentData) => api.post('/payments', paymentData),
-  getAll: () => api.get('/payments'),
+  getAll: (params = {}) => api.get('/payments', { params }),
   getByOrder: (orderId) => api.get(`/payments/order/${orderId}`),
 };
 

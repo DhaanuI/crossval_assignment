@@ -3,6 +3,7 @@ const Order = require('../models/Order');
 const mongoose = require('mongoose');
 const { v4: uuidv4 } = require('uuid');
 const { createPaymentSchema } = require('../validators/paymentValidator');
+const { paginateItems } = require('../utils/pagination');
 
 /**
  * @desc    Record a payment against an order
@@ -318,11 +319,13 @@ const getAllPayments = async (req, res) => {
     const payments = await Payment.find({ userId: req.user._id })
       .populate('orderId', 'customer orderTotal')
       .sort({ createdAt: -1 });
+    const { items, pagination } = paginateItems(payments, req.query);
 
     res.status(200).json({
       success: true,
-      count: payments.length,
-      data: { payments },
+      count: items.length,
+      pagination,
+      data: { payments: items },
     });
   } catch (error) {
     console.error('Get all payments error:', error);

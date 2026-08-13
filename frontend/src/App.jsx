@@ -8,7 +8,7 @@ import OrderDetail from './pages/OrderDetail'
 import CreateOrder from './pages/CreateOrder'
 import Navbar from './components/Navbar'
 import PageLoader from './components/PageLoader'
-import { wakeBackend } from './services/api'
+import { authAPI, wakeBackend } from './services/api'
 import './App.css'
 
 function App() {
@@ -16,23 +16,33 @@ function App() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const token = localStorage.getItem('token')
-    if (token) {
-      setIsAuthenticated(true)
+    const restoreSession = async () => {
+      try {
+        await authAPI.getMe()
+        setIsAuthenticated(true)
+      } catch (err) {
+        setIsAuthenticated(false)
+      } finally {
+        setLoading(false)
+      }
     }
-    setLoading(false)
+
+    restoreSession()
     wakeBackend()
     const keepAlive = setInterval(wakeBackend, 10 * 60 * 1000)
     return () => clearInterval(keepAlive)
   }, [])
 
-  const handleLogin = (token) => {
-    localStorage.setItem('token', token)
+  const handleLogin = () => {
     setIsAuthenticated(true)
   }
 
-  const handleLogout = () => {
-    localStorage.removeItem('token')
+  const handleLogout = async () => {
+    try {
+      await authAPI.logout()
+    } catch (err) {
+      console.log('Logout request failed:', err.message)
+    }
     setIsAuthenticated(false)
   }
 

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { ordersAPI } from '../services/api'
 import PageLoader from '../components/PageLoader'
@@ -14,29 +14,89 @@ const FILTERS = [
 
 function Dashboard() {
   const [orders, setOrders] = useState([])
+  const [summary, setSummary] = useState({
+    totalOrders: 0,
+    totalRevenue: 0,
+    collected: 0,
+    outstanding: 0,
+  })
+  const [pagination, setPagination] = useState({
+    page: 1,
+    pages: 1,
+    total: 0,
+    hasNext: false,
+    hasPrev: false,
+  })
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
+  const [page, setPage] = useState(1)
+  const [exportFrom, setExportFrom] = useState('')
+  const [exportTo, setExportTo] = useState('')
+  const [exporting, setExporting] = useState(false)
 
   useEffect(() => {
-    fetchOrders()
-  }, [])
+    fetchOrders(orders.length === 0)
+  }, [statusFilter, page])
 
-  const filteredOrders = useMemo(() => {
-    if (!statusFilter) return orders
-    return orders.filter((order) => order.status === statusFilter)
-  }, [orders, statusFilter])
-
-  const fetchOrders = async () => {
+  const fetchOrders = async (isInitial = false) => {
     try {
-      setLoading(true)
-      const response = await ordersAPI.getAll()
+      if (isInitial) {
+        setLoading(true)
+      } else {
+        setRefreshing(true)
+      }
+      const response = await ordersAPI.getAll({
+        status: statusFilter || undefined,
+        page,
+        limit: 10,
+      })
       setOrders(response.data.data.orders)
+      setSummary(response.data.data.summary || {
+        totalOrders: response.data.pagination?.total || 0,
+        totalRevenue: 0,
+        collected: 0,
+        outstanding: 0,
+      })
+      setPagination(response.data.pagination || { page: 1, pages: 1, total: 0 })
       setError('')
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to fetch orders')
     } finally {
       setLoading(false)
+      setRefreshing(false)
+    }
+  }
+
+  const changeFilter = (value) => {
+    setStatusFilter(value)
+    setPage(1)
+  }
+
+  const handleExport = async (e) => {
+    e.preventDefault()
+    if (!exportFrom || !exportTo) {
+      setError('Choose a from and to date to export orders')
+      return
+    }
+
+    try {
+      setExporting(true)
+      const response = await ordersAPI.exportCsv(exportFrom, exportTo)
+      const url = window.URL.createObjectURL(new Blob([response.data]))
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `orders-${exportFrom}-to-${exportTo}.csv`
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      window.URL.revokeObjectURL(url)
+      setError('')
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to export orders')
+    } finally {
+      setExporting(false)
     }
   }
 
@@ -88,27 +148,23 @@ function Dashboard() {
       <div className="dashboard-stats">
         <div className="stat-card">
           <h3>Total orders</h3>
-          <p className="stat-value">{orders.length}</p>
+          <p className="stat-value">{summary.totalOrders}</p>
         </div>
         <div className="stat-card">
           <h3>Total revenue</h3>
-          <p className="stat-value">
-            {formatCurrency(orders.reduce((sum, order) => sum + order.orderTotal, 0))}
-          </p>
+          <p className="stat-value">{formatCurrency(summary.totalRevenue)}</p>
         </div>
         <div className="stat-card">
           <h3>Collected</h3>
-          <p className="stat-value">
-            {formatCurrency(orders.reduce((sum, order) => sum + order.totalPaid, 0))}
-          </p>
+          <p className="stat-value">{formatCurrency(summary.collected)}</p>
         </div>
         <div className="stat-card">
           <h3>Outstanding</h3>
-          <p className="stat-value">
-            {formatCurrency(orders.reduce((sum, order) => sum + order.amountDue, 0))}
-          </p>
+          <p className="stat-value">{formatCurrency(summary.outstanding)}</p>
         </div>
       </div>
+
+      {refreshing && <p className="page-kicker">Updating list…</p>}
 
       <div className="filters">
         <span className="filters-label">Filter by status</span>
@@ -120,7 +176,7 @@ function Dashboard() {
               role="tab"
               aria-selected={statusFilter === filter.value}
               className={`filter-chip${statusFilter === filter.value ? ' active' : ''}`}
-              onClick={() => setStatusFilter(filter.value)}
+              onClick={() => changeFilter(filter.value)}
             >
               {filter.label}
             </button>
@@ -128,7 +184,28 @@ function Dashboard() {
         </div>
       </div>
 
-      {filteredOrders.length === 0 ? (
+      <form className="export-bar" onSubmit={handleExport}>
+        <span className="filters-label">Export CSV</span>
+        <input
+          type="date"
+          value={exportFrom}
+          onChange={(e) => setExportFrom(e.target.value)}
+          aria-label="From date"
+          required
+        />
+        <input
+          type="date"
+          value={exportTo}
+          onChange={(e) => setExportTo(e.target.value)}
+          aria-label="To date"
+          required
+        />
+        <button type="submit" className="btn btn-outline btn-sm" disabled={exporting}>
+          {exporting ? 'Exporting…' : 'Download CSV'}
+        </button>
+      </form>
+
+      {orders.length === 0 ? (
         <div className="card empty-state">
           <p>
             {statusFilter
@@ -137,45 +214,70 @@ function Dashboard() {
           </p>
         </div>
       ) : (
-        <div className="orders-table-container">
-          <table>
-            <thead>
-              <tr>
-                <th>Customer</th>
-                <th>Status</th>
-                <th>Order Total</th>
-                <th>Amount Paid</th>
-                <th>Amount Due</th>
-                <th>Due Date</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredOrders.map((order) => (
-                <tr key={order._id}>
-                  <td>{order.customer}</td>
-                  <td>
-                    <span className={getStatusBadgeClass(order.status)}>
-                      {formatStatus(order.status)}
-                    </span>
-                  </td>
-                  <td>{formatCurrency(order.orderTotal)}</td>
-                  <td>{formatCurrency(order.totalPaid)}</td>
-                  <td>{formatCurrency(order.amountDue)}</td>
-                  <td>{formatDate(order.dueDate)}</td>
-                  <td>
-                    <Link
-                      to={`/orders/${order._id}`}
-                      className="btn btn-secondary btn-sm"
-                    >
-                      View Details
-                    </Link>
-                  </td>
+        <>
+          <div className="orders-table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Customer</th>
+                  <th>Status</th>
+                  <th>Order Total</th>
+                  <th>Amount Paid</th>
+                  <th>Amount Due</th>
+                  <th>Due Date</th>
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {orders.map((order) => (
+                  <tr key={order._id}>
+                    <td>{order.customer}</td>
+                    <td>
+                      <span className={getStatusBadgeClass(order.status)}>
+                        {formatStatus(order.status)}
+                      </span>
+                    </td>
+                    <td>{formatCurrency(order.orderTotal)}</td>
+                    <td>{formatCurrency(order.totalPaid)}</td>
+                    <td>{formatCurrency(order.amountDue)}</td>
+                    <td>{formatDate(order.dueDate)}</td>
+                    <td>
+                      <Link
+                        to={`/orders/${order._id}`}
+                        className="btn btn-secondary btn-sm"
+                      >
+                        View Details
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {pagination.pages > 1 && (
+            <div className="pagination">
+              <button
+                type="button"
+                className="btn btn-outline btn-sm"
+                disabled={!pagination.hasPrev}
+                onClick={() => setPage((current) => Math.max(current - 1, 1))}
+              >
+                Previous
+              </button>
+              <span>
+                Page {pagination.page} of {pagination.pages}
+              </span>
+              <button
+                type="button"
+                className="btn btn-outline btn-sm"
+                disabled={!pagination.hasNext}
+                onClick={() => setPage((current) => current + 1)}
+              >
+                Next
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   )

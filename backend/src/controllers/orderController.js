@@ -7,6 +7,7 @@ const {
   validateLineItems,
 } = require('../utils/orderUtils');
 const { createOrderSchema, updateOrderSchema } = require('../validators/orderValidator');
+const { paginateItems } = require('../utils/pagination');
 
 /**
  * @desc    Create new order
@@ -128,21 +129,30 @@ const getOrders = async (req, res) => {
   try {
     const { status } = req.query;
 
-    // Get all orders for the user
     const orders = await Order.find({ userId: req.user._id }).sort({
       createdAt: -1,
     });
 
-    // Filter by status if provided
-    let filteredOrders = orders;
-    if (status) {
-      filteredOrders = orders.filter((order) => order.status === status);
-    }
+    const filteredOrders = status
+      ? orders.filter((order) => order.status === status)
+      : orders;
+
+    const { items, pagination } = paginateItems(filteredOrders, req.query);
+    const summary = {
+      totalOrders: orders.length,
+      totalRevenue: orders.reduce((sum, order) => sum + order.orderTotal, 0),
+      collected: orders.reduce((sum, order) => sum + order.totalPaid, 0),
+      outstanding: orders.reduce((sum, order) => sum + order.amountDue, 0),
+    };
 
     res.status(200).json({
       success: true,
-      count: filteredOrders.length,
-      data: { orders: filteredOrders },
+      count: items.length,
+      pagination,
+      data: {
+        orders: items,
+        summary,
+      },
     });
   } catch (error) {
     console.error('Get orders error:', error);
@@ -415,10 +425,97 @@ const deleteOrder = async (req, res) => {
   }
 };
 
+const toUtcDayStart = (value) => {
+  const date = new Date(value);
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+};
+
+const toUtcDayEnd = (value) => {
+  const date = new Date(value);
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 23, 59, 59, 999));
+};
+
+const csvEscape = (value) => {
+  const text = value == null ? '' : String(value);
+  if (/[",\n]/.test(text)) {
+    return `"${text.replace(/"/g, '""')}"`;
+  }
+  return text;
+};
+
+const exportOrders = async (req, res) => {
+  try {
+    const { from, to } = req.query;
+
+    if (!from || !to) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide from and to dates (YYYY-MM-DD)',
+      });
+    }
+
+    const fromDate = toUtcDayStart(from);
+    const toDate = toUtcDayEnd(to);
+
+    if (isNaN(fromDate.getTime()) || isNaN(toDate.getTime())) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid date range',
+      });
+    }
+
+    if (fromDate > toDate) {
+      return res.status(400).json({
+        success: false,
+        message: 'From date cannot be after to date',
+      });
+    }
+
+    const orders = await Order.find({
+      userId: req.user._id,
+      createdAt: { $gte: fromDate, $lte: toDate },
+    }).sort({ createdAt: -1 });
+
+    const header = [
+      'Customer',
+      'Status',
+      'Order Total',
+      'Amount Paid',
+      'Amount Due',
+      'Due Date',
+      'Created At',
+    ];
+
+    const rows = orders.map((order) => [
+      csvEscape(order.customer),
+      order.status,
+      order.orderTotal.toFixed(2),
+      order.totalPaid.toFixed(2),
+      order.amountDue.toFixed(2),
+      order.dueDate.toISOString().slice(0, 10),
+      order.createdAt.toISOString().slice(0, 10),
+    ]);
+
+    const csv = [header.join(','), ...rows.map((row) => row.join(','))].join('\n');
+    const filename = `orders-${from}-to-${to}.csv`;
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    return res.status(200).send(csv);
+  } catch (error) {
+    console.error('Export orders error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error exporting orders',
+    });
+  }
+};
+
 module.exports = {
   createOrder,
   getOrders,
   getOrderById,
   updateOrder,
   deleteOrder,
+  exportOrders,
 };
