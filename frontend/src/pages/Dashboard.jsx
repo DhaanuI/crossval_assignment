@@ -201,10 +201,7 @@ function Dashboard() {
       </div>
 
       <form className="export-bar" onSubmit={handleExport}>
-        <div className="export-copy">
-          <span className="filters-label">Export CSV</span>
-          <p>Orders created in this date range. Max 90 days or 1000 rows.</p>
-        </div>
+        <span className="filters-label">Export CSV</span>
         <label className="export-field">
           From
           <input
@@ -225,7 +222,7 @@ function Dashboard() {
             required
           />
         </label>
-        <button type="submit" className="btn btn-outline btn-sm" disabled={exporting}>
+        <button type="submit" className="btn btn-primary btn-sm" disabled={exporting}>
           {exporting ? 'Exporting…' : 'Download CSV'}
         </button>
       </form>

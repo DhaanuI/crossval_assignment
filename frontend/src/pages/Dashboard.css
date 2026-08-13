@@ -19,15 +19,14 @@
   border-radius: 16px;
   margin-bottom: 18px;
   display: flex;
-  align-items: center;
-  gap: 14px;
+  align-items: flex-end;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
-.export-copy p {
-  margin: 2px 0 0;
-  color: var(--muted);
-  font-size: 12px;
+.export-bar .filters-label {
+  align-self: center;
+  margin-right: 4px;
 }
 
 .export-field {
@@ -40,8 +39,25 @@
 }
 
 .export-bar input[type="date"] {
-  width: 170px;
+  width: 180px;
   margin: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  font-size: 14px;
+  color: var(--ink);
+  background: #fff;
+}
+
+.export-bar input[type="date"]:focus {
+  outline: none;
+  border-color: var(--teal);
+  box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.12);
+}
+
+.export-bar .btn {
+  height: 42px;
+  padding: 0 18px;
 }
 
 .filters-label {
