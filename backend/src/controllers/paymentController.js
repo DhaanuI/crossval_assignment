@@ -136,7 +136,9 @@ const createPayment = async (req, res) => {
       });
     }
 
-    // EDGE CASE: Validate payment date
+    // EDGE CASE: Validate payment date as a calendar day, not a timestamp.
+    // Date-only strings like "2026-08-13" parse as midnight UTC, which can
+    // look earlier than the same-day order.createdAt (e.g. 10:00 UTC).
     const paymentDateObj = new Date(paymentDate);
     if (isNaN(paymentDateObj.getTime())) {
       await session.abortTransaction();
@@ -146,8 +148,17 @@ const createPayment = async (req, res) => {
       });
     }
 
-    // EDGE CASE: Payment date in the future
-    if (paymentDateObj > new Date()) {
+    const toUtcDay = (value) => {
+      const date = new Date(value);
+      return Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+    };
+
+    const paymentDay = toUtcDay(paymentDateObj);
+    const today = toUtcDay(new Date());
+    const orderDay = toUtcDay(order.createdAt);
+
+    // EDGE CASE: Payment date in the future (calendar day)
+    if (paymentDay > today) {
       await session.abortTransaction();
       return res.status(400).json({
         success: false,
@@ -155,8 +166,8 @@ const createPayment = async (req, res) => {
       });
     }
 
-    // EDGE CASE: Payment date before order creation
-    if (paymentDateObj < order.createdAt) {
+    // EDGE CASE: Payment date before order creation (calendar day)
+    if (paymentDay < orderDay) {
       await session.abortTransaction();
       return res.status(400).json({
         success: false,

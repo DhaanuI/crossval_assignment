@@ -7,6 +7,8 @@ import Dashboard from './pages/Dashboard'
 import OrderDetail from './pages/OrderDetail'
 import CreateOrder from './pages/CreateOrder'
 import Navbar from './components/Navbar'
+import PageLoader from './components/PageLoader'
+import { wakeBackend } from './services/api'
 import './App.css'
 
 function App() {
@@ -14,12 +16,14 @@ function App() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Check if user is authenticated
     const token = localStorage.getItem('token')
     if (token) {
       setIsAuthenticated(true)
     }
     setLoading(false)
+    wakeBackend()
+    const keepAlive = setInterval(wakeBackend, 10 * 60 * 1000)
+    return () => clearInterval(keepAlive)
   }, [])
 
   const handleLogin = (token) => {
@@ -33,7 +37,7 @@ function App() {
   }
 
   if (loading) {
-    return <div className="loading">Loading...</div>
+    return <PageLoader title="Settlements" message="Opening the workspace…" />
   }
 
   return (

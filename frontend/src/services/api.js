@@ -42,6 +42,11 @@ api.interceptors.response.use(
   }
 );
 
+export const wakeBackend = () =>
+  api.get('/health', { timeout: 60000 }).catch((error) => {
+    console.log('Backend wake-up ping failed:', error.message);
+  });
+
 // Auth API
 export const authAPI = {
   signup: (email, password) => api.post('/auth/signup', { email, password }),

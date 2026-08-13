@@ -1,7 +1,16 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ordersAPI, paymentsAPI } from '../services/api'
+import PageLoader from '../components/PageLoader'
 import './OrderDetail.css'
+
+const localToday = () => {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
 
 function OrderDetail() {
   const { id } = useParams()
@@ -13,7 +22,7 @@ function OrderDetail() {
   const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [paymentData, setPaymentData] = useState({
     amount: '',
-    paymentDate: new Date().toISOString().split('T')[0],
+    paymentDate: localToday(),
     note: '',
   })
   const [paymentError, setPaymentError] = useState('')
@@ -67,12 +76,17 @@ function OrderDetail() {
 
       setPaymentData({
         amount: '',
-        paymentDate: new Date().toISOString().split('T')[0],
+        paymentDate: localToday(),
         note: '',
       })
       setShowPaymentModal(false)
     } catch (err) {
-      setPaymentError(err.response?.data?.message || 'Failed to record payment')
+      const apiError = err.response?.data
+      setPaymentError(
+        apiError?.message ||
+          apiError?.errors?.[0]?.message ||
+          'Failed to record payment'
+      )
     } finally {
       setPaymentLoading(false)
     }
@@ -118,7 +132,7 @@ function OrderDetail() {
   }
 
   if (loading) {
-    return <div className="loading">Loading order details...</div>
+    return <PageLoader title="Order record" message="Loading order details…" />
   }
 
   if (error) {
@@ -287,6 +301,7 @@ function OrderDetail() {
                   name="paymentDate"
                   value={paymentData.paymentDate}
                   onChange={handlePaymentInputChange}
+                  max={localToday()}
                   required
                 />
               </div>

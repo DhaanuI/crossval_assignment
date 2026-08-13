@@ -22,12 +22,10 @@ const createPaymentSchema = Joi.object({
     }),
   paymentDate: Joi.date()
     .iso()
-    .max('now')
     .required()
     .messages({
       'date.base': 'Payment date must be a valid date',
       'date.format': 'Payment date must be in ISO format (YYYY-MM-DD)',
-      'date.max': 'Payment date cannot be in the future',
       'any.required': 'Payment date is required',
     }),
   note: Joi.string()

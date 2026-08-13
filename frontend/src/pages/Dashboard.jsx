@@ -1,11 +1,19 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { ordersAPI } from '../services/api'
+import PageLoader from '../components/PageLoader'
 import './Dashboard.css'
+
+const FILTERS = [
+  { value: '', label: 'All' },
+  { value: 'pending', label: 'Pending' },
+  { value: 'partially_paid', label: 'Partially paid' },
+  { value: 'paid', label: 'Paid' },
+  { value: 'overdue', label: 'Overdue' },
+]
 
 function Dashboard() {
   const [orders, setOrders] = useState([])
-  const [filteredOrders, setFilteredOrders] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
@@ -14,20 +22,16 @@ function Dashboard() {
     fetchOrders()
   }, [])
 
-  useEffect(() => {
-    if (statusFilter) {
-      setFilteredOrders(orders.filter(order => order.status === statusFilter))
-    } else {
-      setFilteredOrders(orders)
-    }
-  }, [statusFilter, orders])
+  const filteredOrders = useMemo(() => {
+    if (!statusFilter) return orders
+    return orders.filter((order) => order.status === statusFilter)
+  }, [orders, statusFilter])
 
   const fetchOrders = async () => {
     try {
       setLoading(true)
       const response = await ordersAPI.getAll()
       setOrders(response.data.data.orders)
-      setFilteredOrders(response.data.data.orders)
       setError('')
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to fetch orders')
@@ -63,7 +67,7 @@ function Dashboard() {
   }
 
   if (loading) {
-    return <div className="loading">Loading orders...</div>
+    return <PageLoader title="Workspace" message="Loading orders…" />
   }
 
   return (
@@ -107,19 +111,21 @@ function Dashboard() {
       </div>
 
       <div className="filters">
-        <label htmlFor="statusFilter">Filter by status</label>
-        <select
-          id="statusFilter"
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="filter-select"
-        >
-          <option value="">All Orders</option>
-          <option value="pending">Pending</option>
-          <option value="partially_paid">Partially Paid</option>
-          <option value="paid">Paid</option>
-          <option value="overdue">Overdue</option>
-        </select>
+        <span className="filters-label">Filter by status</span>
+        <div className="filter-chips" role="tablist" aria-label="Filter orders by status">
+          {FILTERS.map((filter) => (
+            <button
+              key={filter.value || 'all'}
+              type="button"
+              role="tab"
+              aria-selected={statusFilter === filter.value}
+              className={`filter-chip${statusFilter === filter.value ? ' active' : ''}`}
+              onClick={() => setStatusFilter(filter.value)}
+            >
+              {filter.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {filteredOrders.length === 0 ? (

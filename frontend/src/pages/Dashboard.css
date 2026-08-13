@@ -19,21 +19,56 @@
   margin-bottom: 18px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 }
 
-.filters label {
+.filters-label {
   font-weight: 600;
   font-size: 14px;
+  white-space: nowrap;
 }
 
-.filter-select {
-  width: 220px;
-  margin: 0;
-  padding: 10px 12px;
+.filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.filter-chip {
   border: 1px solid var(--line);
-  border-radius: 12px;
   background: #fff;
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+}
+
+.filter-chip:hover {
+  border-color: var(--teal);
+  color: var(--teal);
+}
+
+.filter-chip.active {
+  background: var(--teal);
+  border-color: var(--teal);
+  color: #fff;
+}
+
+.filter-chip:active {
+  transform: scale(0.97);
+}
+
+.orders-table-container,
+.dashboard .empty-state {
+  animation: fade-in 0.2s ease;
+}
+
+@keyframes fade-in {
+  from { opacity: 0.45; }
+  to { opacity: 1; }
 }
 
 .orders-table-container {
@@ -88,10 +123,13 @@
     width: 100%;
   }
 
-  .filter-select,
   .dashboard-stats {
     width: 100%;
     grid-template-columns: 1fr 1fr;
+  }
+
+  .filter-chips {
+    width: 100%;
   }
 }
 
