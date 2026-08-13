@@ -48,7 +48,9 @@ function Signup({ onLogin }) {
   return (
     <div className="auth-container">
       <div className="auth-card">
-        <h2>Sign Up</h2>
+        <p className="eyebrow">Get started</p>
+        <h2>Create your workspace</h2>
+        <p className="auth-lead">Set up an account and start tracking orders in minutes.</p>
         {error && <div className="alert alert-error">{error}</div>}
         <form onSubmit={handleSubmit}>
           <div className="form-group">

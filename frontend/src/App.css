@@ -1,158 +1,115 @@
 .App {
   min-height: 100vh;
-  background-color: #f5f5f5;
+  background:
+    radial-gradient(circle at top right, rgba(201, 132, 45, 0.12), transparent 26%),
+    var(--paper);
 }
 
-/* Authentication Pages */
 .auth-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
-  padding: 20px;
+  min-height: calc(100vh - 60px);
+  padding: 32px 16px;
 }
 
 .auth-card {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  padding: 40px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+  padding: 40px 32px;
   width: 100%;
-  max-width: 400px;
+  max-width: 440px;
+}
+
+.auth-card .eyebrow {
+  text-align: center;
 }
 
 .auth-card h2 {
-  margin-bottom: 24px;
+  margin-bottom: 8px;
   text-align: center;
-  color: #333;
-  font-size: 1.8rem;
+  font-size: 2rem;
+  line-height: 1.15;
+}
+
+.auth-lead {
+  text-align: center;
+  color: var(--muted);
+  margin-bottom: 24px;
+  font-size: 0.98rem;
 }
 
 .auth-footer {
   margin-top: 20px;
   text-align: center;
   font-size: 14px;
-  color: #666;
+  color: var(--muted);
 }
 
 .auth-footer a {
-  color: #007bff;
+  color: var(--teal);
+  font-weight: 600;
   text-decoration: none;
 }
 
-.auth-footer a:hover {
-  text-decoration: underline;
-}
-
-/* Tables */
 table {
   width: 100%;
   border-collapse: collapse;
-  background: white;
-  border-radius: 8px;
-  overflow: hidden;
 }
 
 table thead {
-  background-color: #f8f9fa;
+  background: #f7f1e8;
 }
 
-table th {
-  padding: 12px 16px;
+table th, table td {
+  padding: 14px 16px;
   text-align: left;
-  font-weight: 600;
-  color: #333;
-  border-bottom: 2px solid #dee2e6;
+  border-bottom: 1px solid var(--line);
 }
 
-table td {
-  padding: 12px 16px;
-  border-bottom: 1px solid #dee2e6;
-}
+table tbody tr:hover { background: #faf6ef; }
+table tfoot { background: #f7f1e8; font-weight: 700; }
 
-table tbody tr:hover {
-  background-color: #f8f9fa;
-}
-
-table tbody tr:last-child td {
-  border-bottom: none;
-}
-
-table tfoot {
-  background-color: #f8f9fa;
-  font-weight: 600;
-}
-
-table tfoot td {
-  border-top: 2px solid #dee2e6;
-  border-bottom: none;
-}
-
-/* Status Badges */
 .badge {
   display: inline-block;
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
 }
 
-.badge-pending {
-  background-color: #ffc107;
-  color: #856404;
-}
+.badge-pending { background: #f4e3c1; color: #8a5a12; }
+.badge-partially-paid { background: #d7eee9; color: #0f766e; }
+.badge-paid { background: #d7ead4; color: #276749; }
+.badge-overdue { background: #f8d7d4; color: #b42318; }
 
-.badge-partially-paid {
-  background-color: #17a2b8;
-  color: white;
-}
-
-.badge-paid {
-  background-color: #28a745;
-  color: white;
-}
-
-.badge-overdue {
-  background-color: #dc3545;
-  color: white;
-}
-
-/* Modal */
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  inset: 0;
+  background: rgba(18, 32, 43, 0.55);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: 1200;
+  padding: 20px;
 }
 
 .modal-content {
-  background: white;
-  border-radius: 8px;
-  padding: 24px;
-  width: 90%;
-  max-width: 500px;
-  max-height: 90vh;
-  overflow-y: auto;
+  background: var(--white);
+  border-radius: 20px;
+  padding: 28px;
+  width: 100%;
+  max-width: 520px;
 }
 
-.modal-header {
+.modal-header, .modal-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-}
-
-.modal-header h2 {
-  margin: 0;
-  font-size: 1.5rem;
+  gap: 12px;
 }
 
 .modal-close {
@@ -160,20 +117,31 @@ table tfoot td {
   border: none;
   font-size: 2rem;
   cursor: pointer;
-  color: #666;
-  line-height: 1;
-  padding: 0;
-  width: 30px;
-  height: 30px;
+  color: var(--muted);
 }
 
-.modal-close:hover {
-  color: #333;
-}
+@media (max-width: 640px) {
+  .auth-container {
+    align-items: flex-start;
+    padding: 24px 12px 40px;
+  }
 
-.modal-footer {
-  display: flex;
-  gap: 12px;
-  margin-top: 24px;
-  justify-content: flex-end;
+  .auth-card {
+    padding: 28px 18px;
+    border-radius: 20px;
+  }
+
+  .auth-card h2 {
+    font-size: 1.7rem;
+  }
+
+  .auth-card .btn {
+    width: 100%;
+  }
+
+  table th,
+  table td {
+    padding: 12px;
+    font-size: 13px;
+  }
 }

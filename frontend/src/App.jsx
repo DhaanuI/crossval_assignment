@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import Landing from './pages/Landing'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import Dashboard from './pages/Dashboard'
@@ -38,8 +39,18 @@ function App() {
   return (
     <Router>
       <div className="App">
-        {isAuthenticated && <Navbar onLogout={handleLogout} />}
+        <Navbar onLogout={handleLogout} isAuthenticated={isAuthenticated} />
         <Routes>
+          <Route
+            path="/"
+            element={
+              isAuthenticated ? (
+                <Navigate to="/dashboard" />
+              ) : (
+                <Landing />
+              )
+            }
+          />
           <Route
             path="/login"
             element={
@@ -89,10 +100,6 @@ function App() {
                 <Navigate to="/login" />
               )
             }
-          />
-          <Route
-            path="/"
-            element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} />}
           />
         </Routes>
       </div>

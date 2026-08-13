@@ -1,75 +1,58 @@
 .order-detail-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
+  align-items: flex-end;
+  gap: 16px;
+  margin-bottom: 24px;
 }
 
 .order-detail-header h1 {
-  font-size: 32px;
-  color: #333;
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1.1;
 }
 
 .header-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
 }
 
 .order-info-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 20px;
-  margin-bottom: 30px;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: 16px;
+  margin-bottom: 18px;
 }
 
 .info-row {
   display: flex;
   justify-content: space-between;
-  padding: 10px 0;
-  border-bottom: 1px solid #f0f0f0;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
 }
 
-.info-row:last-child {
-  border-bottom: none;
-}
+.info-row:last-child { border-bottom: none; }
 
 .info-label {
   font-weight: 600;
-  color: #666;
+  color: var(--muted);
+  font-size: 14px;
 }
 
-.info-value {
-  color: #333;
-}
+.info-value { color: var(--ink); }
 
-/* Modal styles */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
+.amount-due { font-weight: 700; }
+.amount-due.is-open { color: var(--danger); }
+.amount-due.is-settled { color: #276749; }
 
 .modal {
-  background: white;
-  padding: 30px;
-  border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-  max-width: 500px;
+  background: var(--white);
+  padding: 28px;
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+  max-width: 520px;
   width: 90%;
-  max-height: 90vh;
-  overflow-y: auto;
-}
-
-.modal h2 {
-  margin-bottom: 20px;
-  color: #333;
 }
 
 .modal-actions {
@@ -79,7 +62,45 @@
   margin-top: 20px;
 }
 
-tfoot {
-  background-color: #f8f9fa;
-  font-weight: bold;
+.card table {
+  min-width: 520px;
+}
+
+@media (max-width: 900px) {
+  .order-detail-header,
+  .header-actions,
+  .order-info-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .header-actions .btn {
+    width: 100%;
+  }
+
+  .card {
+    overflow-x: auto;
+  }
+
+  .info-row {
+    gap: 12px;
+  }
+}
+
+@media (max-width: 640px) {
+  .modal-content,
+  .modal {
+    padding: 20px;
+    width: 100%;
+  }
+
+  .modal-footer,
+  .modal-actions {
+    flex-direction: column-reverse;
+  }
+
+  .modal-footer .btn,
+  .modal-actions .btn {
+    width: 100%;
+  }
 }

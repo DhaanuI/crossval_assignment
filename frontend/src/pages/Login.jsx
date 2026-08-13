@@ -36,7 +36,9 @@ function Login({ onLogin }) {
   return (
     <div className="auth-container">
       <div className="auth-card">
-        <h2>Login</h2>
+        <p className="eyebrow">Welcome back</p>
+        <h2>Sign in to your workspace</h2>
+        <p className="auth-lead">Track orders, record settlements, and keep balances current.</p>
         {error && <div className="alert alert-error">{error}</div>}
         <form onSubmit={handleSubmit}>
           <div className="form-group">

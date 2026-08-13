@@ -89,7 +89,11 @@ function CreateOrder() {
   return (
     <div className="container">
       <div className="create-order-header">
-        <h1>Create New Order</h1>
+        <div>
+          <p className="eyebrow">New invoice</p>
+          <h1>Create order</h1>
+          <p className="page-kicker">Add the customer, due date, and line items. Totals calculate as you type.</p>
+        </div>
         <button onClick={() => navigate('/dashboard')} className="btn btn-outline">
           Cancel
         </button>
@@ -173,7 +177,7 @@ function CreateOrder() {
                     type="text"
                     value={`$${((item.quantity || 0) * (item.unitPrice || 0)).toFixed(2)}`}
                     disabled
-                    style={{ backgroundColor: '#f5f5f5' }}
+                    className="readonly-input"
                   />
                 </div>
               </div>

@@ -139,7 +139,11 @@ function OrderDetail() {
   return (
     <div className="container">
       <div className="order-detail-header">
-        <h1>Order Details</h1>
+        <div>
+          <p className="eyebrow">Order record</p>
+          <h1>Order details</h1>
+          <p className="page-kicker">Review line items, record settlements, and keep this invoice current.</p>
+        </div>
         <div className="header-actions">
           <button onClick={() => navigate('/dashboard')} className="btn btn-outline">
             Back to Dashboard
@@ -184,7 +188,7 @@ function OrderDetail() {
           </div>
           <div className="info-row">
             <span className="info-label">Amount Due:</span>
-            <span className="info-value" style={{ fontWeight: 'bold', color: order.amountDue > 0 ? '#e74c3c' : '#27ae60' }}>
+            <span className={`info-value amount-due ${order.amountDue > 0 ? 'is-open' : 'is-settled'}`}>
               {formatCurrency(order.amountDue)}
             </span>
           </div>
@@ -224,9 +228,7 @@ function OrderDetail() {
       <div className="card">
         <h2>Payment History</h2>
         {payments.length === 0 ? (
-          <p style={{ textAlign: 'center', color: '#666', padding: '20px' }}>
-            No payments recorded yet.
-          </p>
+          <p className="empty-state">No payments recorded yet.</p>
         ) : (
           <table>
             <thead>

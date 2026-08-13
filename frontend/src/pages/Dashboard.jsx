@@ -69,16 +69,45 @@ function Dashboard() {
   return (
     <div className="container">
       <div className="dashboard-header">
-        <h1>Orders Dashboard</h1>
+        <div>
+          <p className="eyebrow">Workspace</p>
+          <h1>Orders dashboard</h1>
+          <p className="page-kicker">Review balances, filter by status, and keep settlements moving.</p>
+        </div>
         <Link to="/orders/create" className="btn btn-primary">
-          Create New Order
+          Create new order
         </Link>
       </div>
 
       {error && <div className="alert alert-error">{error}</div>}
 
+      <div className="dashboard-stats">
+        <div className="stat-card">
+          <h3>Total orders</h3>
+          <p className="stat-value">{orders.length}</p>
+        </div>
+        <div className="stat-card">
+          <h3>Total revenue</h3>
+          <p className="stat-value">
+            {formatCurrency(orders.reduce((sum, order) => sum + order.orderTotal, 0))}
+          </p>
+        </div>
+        <div className="stat-card">
+          <h3>Collected</h3>
+          <p className="stat-value">
+            {formatCurrency(orders.reduce((sum, order) => sum + order.totalPaid, 0))}
+          </p>
+        </div>
+        <div className="stat-card">
+          <h3>Outstanding</h3>
+          <p className="stat-value">
+            {formatCurrency(orders.reduce((sum, order) => sum + order.amountDue, 0))}
+          </p>
+        </div>
+      </div>
+
       <div className="filters">
-        <label htmlFor="statusFilter">Filter by Status:</label>
+        <label htmlFor="statusFilter">Filter by status</label>
         <select
           id="statusFilter"
           value={statusFilter}
@@ -94,11 +123,11 @@ function Dashboard() {
       </div>
 
       {filteredOrders.length === 0 ? (
-        <div className="card">
-          <p style={{ textAlign: 'center', color: '#666' }}>
+        <div className="card empty-state">
+          <p>
             {statusFilter
               ? `No ${formatStatus(statusFilter).toLowerCase()} orders found.`
-              : 'No orders found. Create your first order!'}
+              : 'No orders yet. Create your first order to start tracking settlements.'}
           </p>
         </div>
       ) : (
@@ -142,31 +171,6 @@ function Dashboard() {
           </table>
         </div>
       )}
-
-      <div className="dashboard-stats">
-        <div className="stat-card">
-          <h3>Total Orders</h3>
-          <p className="stat-value">{orders.length}</p>
-        </div>
-        <div className="stat-card">
-          <h3>Total Revenue</h3>
-          <p className="stat-value">
-            {formatCurrency(orders.reduce((sum, order) => sum + order.orderTotal, 0))}
-          </p>
-        </div>
-        <div className="stat-card">
-          <h3>Total Paid</h3>
-          <p className="stat-value">
-            {formatCurrency(orders.reduce((sum, order) => sum + order.totalPaid, 0))}
-          </p>
-        </div>
-        <div className="stat-card">
-          <h3>Outstanding</h3>
-          <p className="stat-value">
-            {formatCurrency(orders.reduce((sum, order) => sum + order.amountDue, 0))}
-          </p>
-        </div>
-      </div>
     </div>
   )
 }
