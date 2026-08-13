@@ -32,8 +32,9 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      // Unauthorized - clear token and redirect to login
+    // Only redirect on 401 if user has a token (actual auth failure)
+    // Don't redirect if they're trying to login/signup with wrong credentials
+    if (error.response?.status === 401 && localStorage.getItem('token')) {
       localStorage.removeItem('token');
       window.location.href = '/login';
     }
