@@ -471,10 +471,29 @@ const exportOrders = async (req, res) => {
       });
     }
 
-    const orders = await Order.find({
+    const maxRangeMs = 90 * 24 * 60 * 60 * 1000;
+    if (toDate - fromDate > maxRangeMs) {
+      return res.status(400).json({
+        success: false,
+        message: 'Export range cannot be longer than 90 days',
+      });
+    }
+
+    const filter = {
       userId: req.user._id,
       createdAt: { $gte: fromDate, $lte: toDate },
-    }).sort({ createdAt: -1 });
+    };
+    const maxRows = 1000;
+    const total = await Order.countDocuments(filter);
+
+    if (total > maxRows) {
+      return res.status(400).json({
+        success: false,
+        message: `Too many orders in this range (${total}). Narrow the dates to 1000 or fewer.`,
+      });
+    }
+
+    const orders = await Order.find(filter).sort({ createdAt: -1 });
 
     const header = [
       'Customer',

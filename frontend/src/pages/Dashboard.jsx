@@ -80,11 +80,15 @@ function Dashboard() {
       setError('Choose a from and to date to export orders')
       return
     }
+    if (exportFrom > exportTo) {
+      setError('From date cannot be after to date')
+      return
+    }
 
     try {
       setExporting(true)
       const response = await ordersAPI.exportCsv(exportFrom, exportTo)
-      const url = window.URL.createObjectURL(new Blob([response.data]))
+      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'text/csv' }))
       const link = document.createElement('a')
       link.href = url
       link.download = `orders-${exportFrom}-to-${exportTo}.csv`
@@ -94,7 +98,19 @@ function Dashboard() {
       window.URL.revokeObjectURL(url)
       setError('')
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to export orders')
+      let message = 'Failed to export orders'
+      const data = err.response?.data
+      if (data instanceof Blob) {
+        try {
+          const parsed = JSON.parse(await data.text())
+          message = parsed.message || message
+        } catch (parseErr) {
+          message = 'Failed to export orders'
+        }
+      } else if (data?.message) {
+        message = data.message
+      }
+      setError(message)
     } finally {
       setExporting(false)
     }
@@ -185,21 +201,30 @@ function Dashboard() {
       </div>
 
       <form className="export-bar" onSubmit={handleExport}>
-        <span className="filters-label">Export CSV</span>
-        <input
-          type="date"
-          value={exportFrom}
-          onChange={(e) => setExportFrom(e.target.value)}
-          aria-label="From date"
-          required
-        />
-        <input
-          type="date"
-          value={exportTo}
-          onChange={(e) => setExportTo(e.target.value)}
-          aria-label="To date"
-          required
-        />
+        <div className="export-copy">
+          <span className="filters-label">Export CSV</span>
+          <p>Orders created in this date range. Max 90 days or 1000 rows.</p>
+        </div>
+        <label className="export-field">
+          From
+          <input
+            type="date"
+            value={exportFrom}
+            max={exportTo || undefined}
+            onChange={(e) => setExportFrom(e.target.value)}
+            required
+          />
+        </label>
+        <label className="export-field">
+          To
+          <input
+            type="date"
+            value={exportTo}
+            min={exportFrom || undefined}
+            onChange={(e) => setExportTo(e.target.value)}
+            required
+          />
+        </label>
         <button type="submit" className="btn btn-outline btn-sm" disabled={exporting}>
           {exporting ? 'Exporting…' : 'Download CSV'}
         </button>

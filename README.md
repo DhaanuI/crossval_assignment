@@ -102,7 +102,7 @@ Order and payment routes need the login cookie, or `Authorization: Bearer <token
 | GET | `/api/auth/me` | Current user |
 | POST | `/api/orders` | Create order |
 | GET | `/api/orders` | List my orders (`?status=&page=&limit=`) |
-| GET | `/api/orders/export` | Download CSV (`?from=&to=`) |
+| GET | `/api/orders/export` | Download CSV (`?from=&to=`). Max 90 days or 1000 rows. |
 | GET | `/api/orders/:id` | Order plus payment history |
 | PUT | `/api/orders/:id` | Update, only if no payments |
 | DELETE | `/api/orders/:id` | Delete, only if no payments |
@@ -157,5 +157,6 @@ A late invoice that is fully paid shows `paid`, not `overdue`.
 - Store money as integer cents or Decimal128.
 - Add structured logging, request IDs, and monitoring.
 - Soft-delete payments and keep an audit trail.
+- Stream CSV exports with a Mongo cursor instead of loading the full range into memory. For large exports, generate the file in the background and email a download link.
 - Add password reset, email verification, and CSRF protection.
 - Use a paid host so the API does not sleep.

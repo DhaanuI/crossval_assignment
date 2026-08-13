@@ -24,8 +24,23 @@
   flex-wrap: wrap;
 }
 
+.export-copy p {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.export-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
 .export-bar input[type="date"] {
-  width: auto;
+  width: 170px;
   margin: 0;
 }
 
